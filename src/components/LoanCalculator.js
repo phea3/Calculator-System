@@ -1,45 +1,59 @@
 import React, { useState } from "react";
 
 const LoanCalculator = () => {
-  const [price, setPrice] = useState(0);
-  const [tradeIn, setTradeIn] = useState(0);
-  const [payment, setPayment] = useState(0);
-  const [interestRate, setInterestRate] = useState(0);
+  const [price, setPrice] = useState("");
+  const [tradeIn, setTradeIn] = useState("");
+  const [payment, setPayment] = useState("");
+  const [interestRate, setInterestRate] = useState("");
   const [months, setMonths] = useState(0);
   const [totalSpent, setTotalSpent] = useState(0);
 
+  const handleNumberInput = (value, setState) => {
+    // Allow valid decimal numbers and remove unnecessary leading zeros
+    const sanitizedValue = value.replace(/^0+(?=\d)/, ""); // Retain "0." for decimals
+    setState(sanitizedValue);
+  };
+
   const calculateLoan = () => {
-    const principal = price - tradeIn;
+    const principal = parseFloat(price || 0) - parseFloat(tradeIn || 0);
     let remainingBalance = principal;
     let totalMonths = 0;
 
     while (remainingBalance > 0) {
       totalMonths++;
-      const monthlyInterest = remainingBalance * (interestRate / 100);
-      const principalReduction = payment - monthlyInterest;
+      const monthlyInterest =
+        remainingBalance * (parseFloat(interestRate || 0) / 100);
+      const principalReduction = parseFloat(payment || 0) - monthlyInterest;
       remainingBalance -= principalReduction;
     }
 
     setMonths(totalMonths);
-    setTotalSpent(totalMonths * payment);
+    setTotalSpent(totalMonths * parseFloat(payment || 0));
   };
 
   const resetCalculator = () => {
-    setPrice(0);
-    setTradeIn(0);
-    setPayment(0);
-    setInterestRate(0);
+    setPrice("");
+    setTradeIn("");
+    setPayment("");
+    setInterestRate("");
     setMonths(0);
     setTotalSpent(0);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
         <h1 className="text-xl font-bold text-center text-gray-800 mb-6">
           Loan Calculator
         </h1>
-
+        <div className="mb-6 text-center">
+          <p className="text-gray-700">
+            <strong>Months to pay off:</strong> {months}
+          </p>
+          <p className="text-gray-700">
+            <strong>Total Spent:</strong> ${totalSpent.toFixed(2)}
+          </p>
+        </div>
         <div className="mb-4">
           <label className="block text-gray-600 mb-2" htmlFor="price">
             Original Price ($)
@@ -49,7 +63,7 @@ const LoanCalculator = () => {
             id="price"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={price}
-            onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+            onChange={(e) => handleNumberInput(e.target.value, setPrice)}
           />
         </div>
 
@@ -62,7 +76,7 @@ const LoanCalculator = () => {
             id="tradeIn"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={tradeIn}
-            onChange={(e) => setTradeIn(parseFloat(e.target.value) || 0)}
+            onChange={(e) => handleNumberInput(e.target.value, setTradeIn)}
           />
         </div>
 
@@ -75,7 +89,7 @@ const LoanCalculator = () => {
             id="payment"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={payment}
-            onChange={(e) => setPayment(parseFloat(e.target.value) || 0)}
+            onChange={(e) => handleNumberInput(e.target.value, setPayment)}
           />
         </div>
 
@@ -88,7 +102,7 @@ const LoanCalculator = () => {
             id="interestRate"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={interestRate}
-            onChange={(e) => setInterestRate(parseFloat(e.target.value) || 0)}
+            onChange={(e) => handleNumberInput(e.target.value, setInterestRate)}
           />
         </div>
 
@@ -105,15 +119,6 @@ const LoanCalculator = () => {
           >
             Reset
           </button>
-        </div>
-
-        <div className="mt-6 text-center">
-          <p className="text-gray-700">
-            <strong>Months to pay off:</strong> {months}
-          </p>
-          <p className="text-gray-700">
-            <strong>Total Spent:</strong> ${totalSpent.toFixed(2)}
-          </p>
         </div>
       </div>
     </div>
