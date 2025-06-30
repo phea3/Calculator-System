@@ -9,26 +9,50 @@ const LoanCalculator = () => {
   const [totalSpent, setTotalSpent] = useState(0);
 
   const handleNumberInput = (value, setState) => {
-    // Allow valid decimal numbers and remove unnecessary leading zeros
-    const sanitizedValue = value.replace(/^0+(?=\d)/, ""); // Retain "0." for decimals
+    const sanitizedValue = value.replace(/^0+(?=\d)/, ""); // Prevent leading zeros
     setState(sanitizedValue);
   };
 
   const calculateLoan = () => {
-    const principal = parseFloat(price || 0) - parseFloat(tradeIn || 0);
+    const p = parseFloat(price || "0");
+    const t = parseFloat(tradeIn || "0");
+    const pay = parseFloat(payment || "0");
+    const rate = parseFloat(interestRate || "0") / 100;
+
+    const principal = p - t;
+
+    if (principal <= 0 || pay <= 0) {
+      alert("Please enter valid price, trade-in, and payment amounts.");
+      return;
+    }
+
     let remainingBalance = principal;
     let totalMonths = 0;
+    const maxMonths = 1000;
 
-    while (remainingBalance > 0) {
+    while (remainingBalance > 0 && totalMonths < maxMonths) {
       totalMonths++;
-      const monthlyInterest =
-        remainingBalance * (parseFloat(interestRate || 0) / 100);
-      const principalReduction = parseFloat(payment || 0) - monthlyInterest;
+      const monthlyInterest = remainingBalance * rate;
+      const principalReduction = pay - monthlyInterest;
+
+      if (principalReduction <= 0) {
+        alert(
+          "Monthly payment is too low to cover interest. Please increase the payment amount."
+        );
+        return;
+      }
+
       remainingBalance -= principalReduction;
+      remainingBalance = Math.max(0, remainingBalance); // Avoid negatives due to floating-point errors
+    }
+
+    if (totalMonths === maxMonths) {
+      alert("Calculation exceeded safe limit. Check your inputs.");
+      return;
     }
 
     setMonths(totalMonths);
-    setTotalSpent(totalMonths * parseFloat(payment || 0));
+    setTotalSpent(totalMonths * pay);
   };
 
   const resetCalculator = () => {
@@ -54,6 +78,7 @@ const LoanCalculator = () => {
             <strong>Total Spent:</strong> ${totalSpent.toFixed(2)}
           </p>
         </div>
+
         <div className="mb-4">
           <label className="block text-gray-600 mb-2" htmlFor="price">
             Original Price ($)
